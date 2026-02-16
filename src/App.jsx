@@ -2,35 +2,34 @@ import { useState, useEffect } from "react";
 import { Fireworks } from "@fireworks-js/react";
 
 function App() {
-  // 1. 判断是否是手机端 (简单的屏幕宽度检测)
-  // 如果宽度小于 768px，认为是手机
-  const isMobile = window.innerWidth < 768;
+  // 1. 简单的手机端检测 (用于减少粒子数量，提升性能)
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  // 祝福语列表 (手机上换行也可以，但我们用CSS控制大小)
+  // 2. 祝福语列表 (支持 Emoji 和换行)
   const messages = [
-    "✨ Tap Anywhere! ✨", // 手机上显示 "Tap" 更自然
-    "新年快乐！Happy New Year! 🎆",
-    "代码无 Bug，上线一次过！ 🐛🚫",
-    "身体健康，万事如意！ ❤️",
-    "前程似锦，未来可期！ 🚀",
+    "✨ Make a Wish! ✨",
+    "新年快乐\nHappy New Year! 🎆", // \n 代表换行
+    "身体健康，万事如意 ❤️",
+    "前程似锦，未来可期 🌟",
     "保持热爱，奔赴山海 🌊",
-    "愿你眼里有光，心中有爱 ✨",
   ];
 
   const [text, setText] = useState(messages[0]);
   const [isVisible, setIsVisible] = useState(true);
 
+  // 3. 定时切换文字逻辑
   useEffect(() => {
     const changeCycle = () => {
-      setIsVisible(false);
+      setIsVisible(false); // 先淡出
       setTimeout(() => {
+        // 动画结束后切换文字
         const randomIndex = Math.floor(Math.random() * messages.length);
         setText(messages[randomIndex]);
-        setIsVisible(true);
-      }, 500);
+        setIsVisible(true); // 再淡入
+      }, 500); // 500ms 对应 CSS transition 时间
     };
 
-    const interval = setInterval(changeCycle, 3500);
+    const interval = setInterval(changeCycle, 4000); // 4秒换一次
     return () => clearInterval(interval);
   }, []);
 
@@ -38,35 +37,53 @@ function App() {
     <div
       style={{
         width: "100vw",
-        // 🌟 重点适配 1：使用 dvh (Dynamic Viewport Height)
-        // 解决手机浏览器地址栏遮挡底部的问题，如果不支持则回退到 100vh
-        height: "100dvh",
-        background: "#000",
+        height: "100dvh", // 适配手机浏览器地址栏
+        // 背景：深夜空渐变
+        background: "linear-gradient(to bottom, #020111 0%, #191b2e 100%)",
         position: "fixed",
         top: 0,
         left: 0,
         overflow: "hidden",
       }}
     >
+      {/* 🏙️ 视觉增强层：城市剪影背景 */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          height: "30vh", // 城市占屏幕底部 30%
+          // 使用一张通用的城市剪影图
+          backgroundImage:
+            'url("https://static.vecteezy.com/system/resources/previews/013/248/965/original/black-city-silhouette-free-png.png")',
+          backgroundRepeat: "repeat-x",
+          backgroundSize: "contain",
+          backgroundPosition: "bottom center",
+          zIndex: 2, // 放在烟花前面，产生“烟花在楼后爆炸”的纵深感
+          pointerEvents: "none", // 让鼠标能点透它，触发后面的烟花
+          opacity: 0.8,
+        }}
+      ></div>
+
+      {/* 🎆 核心层：烟花组件 */}
       <Fireworks
         options={{
           hue: { min: 0, max: 360 },
-          delay: { min: 20, max: 40 },
+          delay: { min: 30, max: 60 },
           rocketsPoint: { min: 50, max: 50 },
           opacity: 0.5,
           acceleration: 1.05,
           friction: 0.97,
           gravity: 1.5,
-
-          // 🌟 重点适配 2：性能优化
-          // 电脑端 60 个粒子，手机端只开 30 个，防止卡顿
-          particles: isMobile ? 30 : 60,
-          trace: isMobile ? 2 : 3, // 手机上拖尾短一点，减少渲染压力
-          explosion: isMobile ? 4 : 6, // 手机上爆炸范围小一点
-          intensity: 35,
+          // 手机端粒子减半，防止卡顿
+          particles: isMobile ? 40 : 90,
+          trace: isMobile ? 2 : 4,
+          explosion: 6,
+          intensity: 45,
           flickering: 50,
           lineStyle: "round",
-
+          // 鼠标交互配置
           mouse: {
             click: true,
             max: 5,
@@ -78,8 +95,7 @@ function App() {
               "https://fireworks.js.org/sounds/explosion1.mp3",
               "https://fireworks.js.org/sounds/explosion2.mp3",
             ],
-            // 手机音量稍微调大一点
-            volume: { min: 5, max: 20 },
+            volume: { min: 10, max: 30 },
           },
         }}
         style={{
@@ -88,37 +104,42 @@ function App() {
           width: "100%",
           height: "100%",
           position: "fixed",
-          background: "#000",
-          zIndex: 1,
+          background: "transparent", // 透明背景
+          zIndex: 1, // 在城市后面
         }}
       />
 
-      {/* 文字层 */}
+      {/* 📝 文字层：霓虹特效 */}
       <div
         style={{
           position: "absolute",
-          top: "50%",
+          top: "35%", // 稍微靠上，避开底部城市
           left: "50%",
           transform: "translate(-50%, -50%)",
-          color: "white",
-          fontWeight: "bold",
+          color: "#fff",
           textAlign: "center",
-          pointerEvents: "none",
-          textShadow: "0 0 20px rgba(255,255,255,0.9)",
-          zIndex: 10,
+          pointerEvents: "none", // 必须点透
+          zIndex: 10, // 最顶层
+
+          // 动画与排版
           opacity: isVisible ? 1 : 0,
           transition: "opacity 0.5s ease-in-out",
+          whiteSpace: "pre-wrap", // 允许文字内的 \n 换行
+          width: "90%",
 
-          // 🌟 重点适配 3：响应式文字排版
-          // 允许文字换行，防止撑破屏幕
-          whiteSpace: "normal",
-          width: "90%", // 左右留出 5% 的边距
-          wordBreak: "keep-all", // 尽量不在单词/词组中间断开（针对中文优化）
+          // 字体适配
+          fontFamily: '"Arial Black", "Helvetica Neue", sans-serif',
+          fontSize: "clamp(2rem, 8vw, 4.5rem)", // 智能缩放字体
+          lineHeight: 1.3,
 
-          // 🌟 重点适配 4：智能字体大小 (clamp 函数)
-          // 最小 1.5rem (手机)，最大 3rem (电脑)，中间自动根据视口宽度缩放
-          fontSize: "clamp(1.5rem, 5vw, 3rem)",
-          lineHeight: 1.5, // 增加行高，防止换行后挤在一起
+          // ✨ 赛博朋克霓虹光晕 (蓝色+紫色)
+          textShadow: `
+          0 0 5px #fff,
+          0 0 10px #fff,
+          0 0 20px #00b3ff,
+          0 0 40px #00b3ff,
+          0 0 80px #e60073
+        `,
         }}
       >
         {text}
