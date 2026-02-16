@@ -657,48 +657,6 @@ function App() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 控制面板 */}
-      <div style={controlPanelStyle}>
-        {/* 音效开关 */}
-        <button
-          onClick={() =>
-            setUserSettings((prev) => ({
-              ...prev,
-              soundEnabled: !prev.soundEnabled,
-            }))
-          }
-          style={getButtonStyle(
-            userSettings.soundEnabled,
-            "rgba(0,180,255,0.8)",
-          )}
-        >
-          {userSettings.soundEnabled ? "🔊" : "🔇"}
-        </button>
-
-        {/* 振动开关（仅移动端显示） */}
-        {deviceInfo.isMobile && (
-          <button
-            onClick={() =>
-              setUserSettings((prev) => ({
-                ...prev,
-                vibrationEnabled: !prev.vibrationEnabled,
-              }))
-            }
-            style={getButtonStyle(
-              userSettings.vibrationEnabled,
-              "rgba(255,100,200,0.8)",
-            )}
-          >
-            {userSettings.vibrationEnabled ? "📳" : "📵"}
-          </button>
-        )}
-
-        {/* 性能指示器 */}
-        <div style={getFpsIndicatorStyle(performanceState.fps)}>
-          {Math.round(performanceState.fps)}
-        </div>
-      </div>
-
       {/* ⭐ 星空背景层 */}
       <StarryBackground
         starCount={
